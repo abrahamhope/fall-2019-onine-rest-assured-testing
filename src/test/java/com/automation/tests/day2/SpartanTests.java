@@ -49,4 +49,16 @@ public class SpartanTests {
                 statusCode(201);
 
     }
+    @Test
+    @DisplayName("Delete some spartans and verify that status code is 204")
+    public void deleteSpartanTest(){
+
+        given().
+                auth().basic("admin", "admin").
+                baseUri(BASE_URL).
+                when().
+                delete("/api/spartans/{id}", 220).prettyPeek().
+                then().
+                statusCode(204);
+    }
 }
