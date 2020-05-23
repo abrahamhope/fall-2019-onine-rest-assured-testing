@@ -16,6 +16,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import static io.restassured.RestAssured.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -68,6 +69,8 @@ public class POJOPracticeWithSpartanApp {
         String name = "Nursultan";
         //HTTP PUT request to update exiting record, for example exiting spartan.
         //PUT - requires to provide ALL parameters in body
+        //PUT requires same bod ass POST
+        // If you miss at least one parameter, it will not work
         Spartan spartan = new Spartan(name, "Male", 123112312312L);
         //get spartan from web service
         Spartan spartanToUpdate = given().
@@ -98,4 +101,47 @@ public class POJOPracticeWithSpartanApp {
                 statusCode(200).body("name", is(name));
         //verify that name is correct, after update
     }
+
+    @Test
+    @DisplayName("Verify that user can perfomr PATCH request")
+    public void patchUserTest1(){
+        //PATCH = partal update of existing record
+
+        int userId = 28;
+
+       // let's put the code to rake random user
+        //get all spartans
+        Response response0= given().accept(ContentType.JSON).when().get("/spartans");
+        //I can save them all in the array list
+        List<Spartan> allSpartans = response0.jsonPath().getList("",Spartan.class);
+        Random random = new Random();
+        //generate random number
+        int randomNum= random.nextInt(allSpartans.size());
+
+        int randomUserID= allSpartans.get(randomNum).getId();
+
+        userId = randomUserID; //to assign random user id
+
+
+        Map<String, String> update = new HashMap<>();
+        update.put("name", "Aidar");
+
+        Response response = given().
+                                contentType(ContentType.JSON).body(update).
+                            when().
+                                patch("/spartans/{id}",userId);
+
+        response.then().assertThat().statusCode(204);
+
+                given().
+                        accept(ContentType.JSON).
+                when().
+                        get("/spartans/{id}", userId).prettyPeek().
+                then().
+                        assertThat().statusCode(200).body("name", is("Aidar"));
+
+
+    }
+
+
 }
